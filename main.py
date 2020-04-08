@@ -29,7 +29,7 @@ class MyFrame1(wx.Frame):
             size=wx.Size(460, 750),
             style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
         )"""
-        super(MyFrame1, self).__init__(parent, size = (490,720))
+        super(MyFrame1, self).__init__(parent, size = (500,720))
         self.InitUI()
 
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
@@ -96,9 +96,225 @@ class MyFrame1(wx.Frame):
 
 
 class Colonies(wx.Panel): 
-   def __init__(self, parent): 
-      super(Colonies, self).__init__(parent) 
-      text = wx.TextCtrl(self, style = wx.TE_MULTILINE, size = (250,150)) 
+    def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.Size( 500,720 ), style = wx.TAB_TRAVERSAL, name = wx.EmptyString ):
+        wx.Panel.__init__ ( self, parent, id = id, pos = pos, size = size, style = style, name = name )
+
+        gbSizer1 = wx.GridBagSizer( 0, 0 )
+        gbSizer1.SetFlexibleDirection( wx.BOTH )
+        gbSizer1.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+
+        self.m_name = wx.StaticText( self, wx.ID_ANY, u"Name", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_name.Wrap( -1 )
+
+        gbSizer1.Add( self.m_name, wx.GBPosition( 0, 0 ), wx.GBSpan( 1, 1 ), wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+        self.v_name = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_name, wx.GBPosition( 0, 1 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        self.btn_save = wx.Button( self, wx.ID_ANY, u"Save", wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.btn_save, wx.GBPosition( 0, 2 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        self.btn_load = wx.Button( self, wx.ID_ANY, u"Load", wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.btn_load, wx.GBPosition( 0, 3 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        self.m_type = wx.StaticText( self, wx.ID_ANY, u"Type", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_type.Wrap( -1 )
+
+        gbSizer1.Add( self.m_type, wx.GBPosition( 1, 0 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        ch_typesChoices = [ u"Agricultural", u"Industrial", u"Research", u"Ecclesiastical" ]
+        self.ch_types = wx.ComboBox( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, ch_typesChoices, 0 )
+        gbSizer1.Add( self.ch_types, wx.GBPosition( 1, 1 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        self.m_funded = wx.CheckBox( self, wx.ID_ANY, u"By Contract", wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.m_funded, wx.GBPosition( 1, 2 ), wx.GBSpan( 1, 1 ), wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+        self.btn_generate = wx.Button( self, wx.ID_ANY, u"Generate", wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.btn_generate, wx.GBPosition( 1, 3 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        self.m_size = wx.StaticText( self, wx.ID_ANY, u"Size", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_size.Wrap( -1 )
+
+        gbSizer1.Add( self.m_size, wx.GBPosition( 2, 2 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        self.v_size = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_size, wx.GBPosition( 2, 3 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        self.m_profit = wx.StaticText( self, wx.ID_ANY, u"Profit Factor", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_profit.Wrap( -1 )
+
+        gbSizer1.Add( self.m_profit, wx.GBPosition( 2, 0 ), wx.GBSpan( 1, 1 ), wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+        self.m_comp = wx.StaticText( self, wx.ID_ANY, u"Complacency", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_comp.Wrap( -1 )
+
+        gbSizer1.Add( self.m_comp, wx.GBPosition( 3, 0 ), wx.GBSpan( 1, 1 ), wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+        self.m_order = wx.StaticText( self, wx.ID_ANY, u"Order", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_order.Wrap( -1 )
+
+        gbSizer1.Add( self.m_order, wx.GBPosition( 3, 1 ), wx.GBSpan( 1, 1 ), wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+        self.m_prod = wx.StaticText( self, wx.ID_ANY, u"Productivity", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_prod.Wrap( -1 )
+
+        gbSizer1.Add( self.m_prod, wx.GBPosition( 3, 2 ), wx.GBSpan( 1, 1 ), wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+        self.m_piety = wx.StaticText( self, wx.ID_ANY, u"Piety", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_piety.Wrap( -1 )
+
+        gbSizer1.Add( self.m_piety, wx.GBPosition( 3, 3 ), wx.GBSpan( 1, 1 ), wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+
+        self.v_profit = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_profit, wx.GBPosition( 2, 1 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        self.v_comp = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_comp, wx.GBPosition( 4, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.v_order = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_order, wx.GBPosition( 4, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.v_prod = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_prod, wx.GBPosition( 4, 2 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.v_piety = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_piety, wx.GBPosition( 4, 3 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.m_frac = wx.StaticText( self, wx.ID_ANY, u"Fraction", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_frac.Wrap( -1 )
+
+        gbSizer1.Add( self.m_frac, wx.GBPosition( 5, 0 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        self.m_year = wx.StaticText( self, wx.ID_ANY, u"Year", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_year.Wrap( -1 )
+
+        gbSizer1.Add( self.m_year, wx.GBPosition( 5, 1 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        self.m_mill = wx.StaticText( self, wx.ID_ANY, u"Millenium", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_mill.Wrap( -1 )
+
+        gbSizer1.Add( self.m_mill, wx.GBPosition( 5, 2 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        self.v_frac = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_frac, wx.GBPosition( 6, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.v_year = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_year, wx.GBPosition( 6, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.v_mill = wx.TextCtrl( self, wx.ID_ANY, u"41", wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_mill, wx.GBPosition( 6, 2 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.m_calc = wx.Button( self, wx.ID_ANY, u"Calculate", wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.m_calc, wx.GBPosition( 6, 3 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND, 5 )
+
+        self.m_gov = wx.TextCtrl( self, wx.ID_ANY, u"Governour", wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.m_gov, wx.GBPosition( 7, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        ch_personalityChoices = []
+        self.ch_personality = wx.ComboBox( self, wx.ID_ANY, u"Personality", wx.DefaultPosition, wx.DefaultSize, ch_personalityChoices, 0 )
+        gbSizer1.Add( self.ch_personality, wx.GBPosition( 7, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        m_upgradesChoices = []
+        self.m_upgrades = wx.ComboBox( self, wx.ID_ANY, u"Upgrades", wx.DefaultPosition, wx.DefaultSize, m_upgradesChoices, 0 )
+        gbSizer1.Add( self.m_upgrades, wx.GBPosition( 8, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.m_upgrade_time = wx.TextCtrl( self, wx.ID_ANY, u"Time (fractions)", wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.m_upgrade_time, wx.GBPosition( 8, 2 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        self.btn_upgrade = wx.Button( self, wx.ID_ANY, u"Apply Upgrade", wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.btn_upgrade, wx.GBPosition( 8, 3 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_VERTICAL, 5 )
+
+        self.m_resource1 = wx.StaticText( self, wx.ID_ANY, u"Minerals", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_resource1.Wrap( -1 )
+
+        gbSizer1.Add( self.m_resource1, wx.GBPosition( 9, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.m_resource2 = wx.StaticText( self, wx.ID_ANY, u"Add.Resource", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_resource2.Wrap( -1 )
+
+        gbSizer1.Add( self.m_resource2, wx.GBPosition( 9, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.m_resource3 = wx.StaticText( self, wx.ID_ANY, u"Organics", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_resource3.Wrap( -1 )
+
+        gbSizer1.Add( self.m_resource3, wx.GBPosition( 9, 2 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.m_resource4 = wx.StaticText( self, wx.ID_ANY, u"Special", wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_resource4.Wrap( -1 )
+
+        gbSizer1.Add( self.m_resource4, wx.GBPosition( 9, 3 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        ch_resource1Choices = []
+        self.ch_resource1 = wx.ComboBox( self, wx.ID_ANY, u"Minerals", wx.DefaultPosition, wx.DefaultSize, ch_resource1Choices, 0 )
+        gbSizer1.Add( self.ch_resource1, wx.GBPosition( 10, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        ch_resource2Choices = []
+        self.ch_resource2 = wx.ComboBox( self, wx.ID_ANY, u"Other", wx.DefaultPosition, wx.DefaultSize, ch_resource2Choices, 0 )
+        gbSizer1.Add( self.ch_resource2, wx.GBPosition( 10, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        ch_resource3Choices = []
+        self.ch_resource3 = wx.ComboBox( self, wx.ID_ANY, u"Organics", wx.DefaultPosition, wx.DefaultSize, ch_resource3Choices, 0 )
+        gbSizer1.Add( self.ch_resource3, wx.GBPosition( 10, 2 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        ch_resource4Choices = []
+        self.ch_resource4 = wx.ComboBox( self, wx.ID_ANY, u"Special", wx.DefaultPosition, wx.DefaultSize, ch_resource4Choices, 0 )
+        gbSizer1.Add( self.ch_resource4, wx.GBPosition( 10, 3 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.v_resource1 = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_resource1, wx.GBPosition( 11, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.v_resource2 = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_resource2, wx.GBPosition( 11, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.v_resource3 = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_resource3, wx.GBPosition( 11, 2 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.v_resource4 = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+        gbSizer1.Add( self.v_resource4, wx.GBPosition( 11, 3 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+
+        self.m_output = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_BESTWRAP|wx.TE_MULTILINE|wx.TE_READONLY )
+        gbSizer1.Add( self.m_output, wx.GBPosition( 12, 0 ), wx.GBSpan( 17, 4 ), wx.ALL|wx.EXPAND, 5 )
+
+
+        self.SetSizer( gbSizer1 )
+        self.Layout()
+
+        # Connect Events
+        self.btn_save.Bind( wx.EVT_BUTTON, self.save_colony(self) )
+        self.btn_load.Bind( wx.EVT_BUTTON, self.load_colony() )
+        self.btn_generate.Bind( wx.EVT_BUTTON, self.create_colony )
+        self.m_calc.Bind( wx.EVT_BUTTON, self.calculate(self) )
+
+    def __del__( self ):
+        pass
+
+
+    # Virtual event handlers, overide them in your derived class
+    def save_colony(self)( self, event ):
+        event.Skip()
+
+    def load_colony()( self, event ):
+        event.Skip()
+
+    def create_colony( self, event ):
+        event.Skip()
+
+    def calculate(self)( self, event ):
+        event.Skip()
+
+    def __del__( self ):
+        pass
+
+
+    # Virtual event handlers, overide them in your derived class
+    def save_colony( self, event ):
+        pass
+
+    def load_colony( self, event ):
+        pass
+
+    def calculate( self, event ):
+        pass
         
 
 class Navigation(wx.Panel): 
