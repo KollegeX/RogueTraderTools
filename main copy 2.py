@@ -9,30 +9,22 @@
 import os
 import wx
 import wx.xrc
+import wx.grid
 import random
 from wx.lib.intctrl import IntCtrl
 from operator import itemgetter
 import sqlite3
+import datetime
 
 wildcard = "Python source (*.py)|*.py|" \
             "All files (*.*)|*.*"
 
-cwd = os.path.abspath(os.curdir)
-conn = sqlite3.connect('colonies.db')
-c = conn.cursor()
-
-#Create table once
-"""
-c.execute('''CREATE TABLE colonies (name UNIQUE, type, contracted integer, profit integer, size integer, complacency integer, order integer, productivity integer, piety integer, fraction integer, year integer, millenium integer, governour, personality, minerals, addresources, organics, special, mineralsvalue integer, addresourcesvalue integer, organicsvalue integer, specialvalue integer, history)''')
-
-"""
-
 ###########################################################################
-## Class RT_Tools
+## Class MyFrame1
 ###########################################################################
 
 
-class RT_Tools(wx.Frame):
+class MyFrame1(wx.Frame):
     def __init__(self, parent):
         """wx.Frame.__init__(
             self,
@@ -43,12 +35,10 @@ class RT_Tools(wx.Frame):
             size=wx.Size(460, 750),
             style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL,
         )"""
-        super(RT_Tools, self).__init__(parent, size = (500,720))
+        super(MyFrame1, self).__init__(parent, size = (500,720))
         self.InitUI()
 
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
-
-        #create menu (currently not used)
         '''
         self.m_menubar1 = wx.MenuBar(0)
         self.m_menu = wx.Menu()
@@ -97,7 +87,7 @@ class RT_Tools(wx.Frame):
     def onNew(self, e):
         global restart
         restart = False
-        win = RT_Tools(None)
+        win = MyFrame1(None)
         win.Show(True)
         self.SetTopWindow(win)
         return True
@@ -228,24 +218,13 @@ class Colonies(wx.Panel):
         self.m_gov = wx.TextCtrl( self, wx.ID_ANY, u"Governour", wx.DefaultPosition, wx.DefaultSize, 0 )
         gbSizer1.Add( self.m_gov, wx.GBPosition( 7, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
-        ch_personalityChoices = [u"Beloved", u"Militarist", u"Corrupt", u"Idle", u"Ambitious", u"Zealous", u"Patron", u"Unlucky", u"Administrator", u"Cruel", u"Spymaster", u"Generalissimo", u"Paranoid", u"Mad", u"Charitable", u"Vainglorious", u"Scholarly", u"Avaricious"]
+        ch_personalityChoices = []
         self.ch_personality = wx.ComboBox( self, wx.ID_ANY, u"Personality", wx.DefaultPosition, wx.DefaultSize, ch_personalityChoices, 0 )
-        gbSizer1.Add( self.ch_personality, wx.GBPosition( 7, 2 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+        gbSizer1.Add( self.ch_personality, wx.GBPosition( 7, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
-        ch_representativeChoices = [u"Satrap", u"Judge", u"Cardinal", u"Colonist", u"General", u"Dynasty Member"]
-        self.ch_representative = wx.ComboBox( self, wx.ID_ANY, u"Representative", wx.DefaultPosition, wx.DefaultSize, ch_representativeChoices, 0 )
-        gbSizer1.Add( self.ch_representative, wx.GBPosition( 7, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
-
-        self.btn_status = wx.Button( self, wx.ID_ANY, u"Status", wx.DefaultPosition, wx.DefaultSize, 0 )
-        gbSizer1.Add( self.btn_status, wx.GBPosition( 7, 4 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND, 5 )
-
-        m_supp_upgradesChoices = [u"Arbites Precinct", u"Eccl. Mission", u"Mechanicum Station", u"Infantry Garrison", u"Navy Station", u"Cultural Monument", u"Industrial Facility", u"Personal Lodgings", u"Contacts", u"Trappings"]
-        self.m_supp_upgrades = wx.ComboBox( self, wx.ID_ANY, u"Infrastructure", wx.DefaultPosition, wx.DefaultSize, m_supp_upgradesChoices, 0 )
-        gbSizer1.Add( self.m_supp_upgrades, wx.GBPosition( 8, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
-
-        m_main_upgradesChoices = [u"Transport", u"Power", u"Water", u"Food & Distro", u"Communication" ]
-        self.m_main_upgrades = wx.ComboBox( self, wx.ID_ANY, u"Support", wx.DefaultPosition, wx.DefaultSize, m_main_upgradesChoices, 0 )
-        gbSizer1.Add( self.m_main_upgrades, wx.GBPosition( 8, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
+        m_upgradesChoices = []
+        self.m_upgrades = wx.ComboBox( self, wx.ID_ANY, u"Upgrades", wx.DefaultPosition, wx.DefaultSize, m_upgradesChoices, 0 )
+        gbSizer1.Add( self.m_upgrades, wx.GBPosition( 8, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
         self.m_upgrade_time = wx.TextCtrl( self, wx.ID_ANY, u"Time (fractions)", wx.DefaultPosition, wx.DefaultSize, 0 )
         gbSizer1.Add( self.m_upgrade_time, wx.GBPosition( 8, 2 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
@@ -273,20 +252,20 @@ class Colonies(wx.Panel):
 
         gbSizer1.Add( self.m_resource4, wx.GBPosition( 9, 3 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
-        ch_resource1Choices = [u"Industrial", u"Ornamental", u"Radioactive", u"Exotic Material"]
+        ch_resource1Choices = []
         self.ch_resource1 = wx.ComboBox( self, wx.ID_ANY, u"Minerals", wx.DefaultPosition, wx.DefaultSize, ch_resource1Choices, 0 )
         gbSizer1.Add( self.ch_resource1, wx.GBPosition( 10, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
-        ch_resource2Choices = [u"Archeotech Cache", u"Minerals", u"Organic Compound", u"Xenos Ruins"]
+        ch_resource2Choices = []
         self.ch_resource2 = wx.ComboBox( self, wx.ID_ANY, u"Other", wx.DefaultPosition, wx.DefaultSize, ch_resource2Choices, 0 )
         gbSizer1.Add( self.ch_resource2, wx.GBPosition( 10, 1 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
-        ch_resource3Choices = [u"Curative", u"Juvenat Compound", u"Toxin", u"Vivid Accessory", u"Exotic Compound"]
+        ch_resource3Choices = []
         self.ch_resource3 = wx.ComboBox( self, wx.ID_ANY, u"Organics", wx.DefaultPosition, wx.DefaultSize, ch_resource3Choices, 0 )
         gbSizer1.Add( self.ch_resource3, wx.GBPosition( 10, 2 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
-        ch_resource4Choices = [u"Canyon", u"Cave Network", u"Crater", u"Mountain", u"Volcano", u"Glacier(ex)", u"Inland Sea(ex)",u"Perpetual Storm(ex)",u"Reef(ex)", u"Whirlpool(ex)"]
-        self.ch_resource4 = wx.ComboBox( self, wx.ID_ANY, u"Landmark", wx.DefaultPosition, wx.DefaultSize, ch_resource4Choices, 0 )
+        ch_resource4Choices = []
+        self.ch_resource4 = wx.ComboBox( self, wx.ID_ANY, u"Special", wx.DefaultPosition, wx.DefaultSize, ch_resource4Choices, 0 )
         gbSizer1.Add( self.ch_resource4, wx.GBPosition( 10, 3 ), wx.GBSpan( 1, 1 ), wx.ALL, 5 )
 
         self.v_resource1 = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -304,7 +283,7 @@ class Colonies(wx.Panel):
         self.m_output = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_BESTWRAP|wx.TE_MULTILINE|wx.TE_READONLY )
         gbSizer1.Add( self.m_output, wx.GBPosition( 12, 0 ), wx.GBSpan( 17, 4 ), wx.ALL|wx.EXPAND, 5 )
 
-        
+        self.currentDirectory = os.getcwd()
         self.SetSizer( gbSizer1 )
         self.Layout()
 
@@ -313,278 +292,74 @@ class Colonies(wx.Panel):
         self.btn_load.Bind( wx.EVT_BUTTON, self.load_colony )
         self.btn_generate.Bind( wx.EVT_BUTTON, self.create_colony )
         self.btn_calc.Bind( wx.EVT_BUTTON, self.calculate )
-        self.btn_status.Bind( wx.EVT_BUTTON, self.status_update )
 
-        #upgrade values
-        self.main_upgrades = [["Transport",0,0], ["Power",0,0],
-        ["Water",0,0], ["Food & Distro",0,0], ["Communication",0,0]]
-        self.supp_upgrades = [["Arbites Precinct",0,0], ["Eccl. Mission",0,0], ["Mechanicum Station",0,0],["Infantry Garrison",0,0],  ["Navy Station",0,0], ["Cultural Monument",0,0], ["Industrial Facility",0,0],["Personal Lodgings",0,0], ["Contacts",0,0], ["Trappings",0,0]]
+        #create a upgrade list of triples (build status (done or progress = 1), name, time remaining)
+        upgrades = [
+            (0, "name", 0)
+        ]
         
-        colony_chosen = False
-        chosen_colony = ""
-        #save history
+        #create config. change name in save function
+        cfg = wx.FileConfig(appname="RT-Tools", vendorName="", localFilename="colonies/"+self.v_name.GetLineText(0), style=CONFIG_USE_LOCAL_FILE)
+        cfg.SetPath("colonies/")
 
     def __del__( self ):
         pass
     
     # Virtual event handlers, overide them in your derived class
-    def status_update( self, event):
-        pass
-
     def save_colony( self, event ):
-        c_name = self.v_name.GetValue()
-        c_type = self.ch_types.GetString(self.ch_types.GetCurrentSelection())
-        c_contracted = self.m_funded.IsChecked()
-        c_profit = int((self.v_profit.GetValue()))
-        c_size = int(self.v_profit.GetValue())
-        c_comp = int (self.v_comp.GetValue())
-        c_order = int (self.v_comp.GetValue())
-        c_prod = int (self.v_comp.GetValue())
-        c_piety = int (self.v_comp.GetValue())
-        c_fraction = int (self.v_comp.GetValue())
-        c_year = int (self.v_comp.GetValue())
-        c_millenium = int (self.v_comp.GetValue())
-        c_governour = self.m_gov.GetValue()
-        c_personality = self.ch_personality.GetString(self.ch_personality.GetCurrentSelection())
-        c_minerals = self.ch_resource1.GetString(self.ch_resource1.GetCurrentSelection())
-        c_addresource = self.ch_resource2.GetString(self.ch_resource2.GetCurrentSelection())
-        c_organics = self.ch_resource3.GetString(self.ch_resource3.GetCurrentSelection())
-        c_special = self.ch_resource4.GetString(self.ch_resource4.GetCurrentSelection())
-        c_mvalue = int (self.v_comp.GetValue())
-        c_avalue = int (self.v_comp.GetValue())
-        c_ovalue = int (self.v_comp.GetValue())
-        c_svalue = int (self.v_comp.GetValue())
-        c_representative = self.ch_representative.GetString(self.ch_representative.GetCurrentSelection())
-        c_history = self.m_output.GetValue()
-
-        params = (c_name, c_type, c_contracted, c_profit, c_size, c_comp, c_order, c_prod, c_piety, c_fraction, c_year, c_millenium, c_governour, c_personality, c_minerals, c_addresource, c_organics, c_special, c_mvalue, c_avalue, c_ovalue, c_svalue, c_history, c_representative)
-
-        c.execute("INSERT OR REPLACE INTO colonies VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", params)
-
-        main_upgrades = self.main_upgrades
-        for entry in main_upgrades:
-            params = (entry[0], entry[1], entry[2], entry[3], self.v_name.GetValue())
-            c.execute("INSERT OR REPLACE INTO main_upgrades VALUES(?,?,?,?", params)
-
-        supp_upgrades = self.supp_upgrades
-        for entry in supp_upgrades:
-            params = (entry[0], entry[1], entry[2], entry[3], self.v_name.GetValue())
-            c.execute("INSERT OR REPLACE INTO supp_upgrades VALUES(?,?,?,?", params)
-
-        conn.commit()
+        """
+        self.cfg.Write("Name",self.v_name.GetValue)
+        self.cfg.Write("Type", self.ch_types.CurrentSelection )
+        self.cfg.WriteBool("Contracted", self.m_funded.GetValue)
+        self.cfg.WriteInt("Profit", self.v_profit)
+        self.cfg.WriteInt("Size", self.v_size)
+        self.cfg.WriteInt("Complacency",self.v_comp)
+        self.cfg.WriteInt("Order", self.v_order)
+        self.cfg.WriteInt("Productivity", self.v_prod)
+        self.cfg.WriteInt("Piety", self.v_piety)
+        self.cfg.WriteInt("Fraction", self.v_frac)
+        self.cfg.WriteInt("Year", self.v_year)
+        self.cfg.WriteInt("Millenium", self.v_mill)
+        self.cfg.Write("Governour", self.m_gov )
+        self.cfg.Write("Personality", self.ch_personality.CurrentSelection )
+        for x,y,z in self.upgrades:
+            if x == 1:
+                self.cfg.WriteInt(y,z)
+        self.cfg.Write("Minerals", self.ch_resource1)
+        self.cfg.Write("Add.Resource", self.ch_resource2)
+        self.cfg.Write("Organics", self.ch_resource3)
+        self.cfg.Write("Special", self.ch_resource4)
+        self.cfg.Write("Minerals Value", self.v_resource1)
+        self.cfg.Write("Add.Resource Value", self.v_resource2)
+        self.cfg.Write("Organics Value", self.v_resource3)
+        self.cfg.Write("Special Value", self.v_resource4)
+        #save colony history output in file
+        """
+        history = str(self.v_name.GetLineText(0))+"_History"
+        self.m_output.SaveFile(filename=history)
+        rename = "colonies/"+str(self.v_name.GetLineText(0))
+        os.rename('colonies/New Colony',rename)
 
     def load_colony( self, event ):
-        #choose name from database ? or similar, name it "colony" for other uses in function
-        self.colony_chosen = False
-        c.execute("SELECT * FROM colonies")
-        rows = c.fetchall()
-        #get colonies
-        colony_choices = []
-        for row in rows:
-            colony_choices.append(str(row[0]))
-        #create choice list and dialog
-        self.dialog = wx.Dialog(None, -1, 'Choose Colony', size=(200,200), style=wx.DEFAULT_DIALOG_STYLE & ~wx.RESIZE_BORDER)
-        self.colonies = wx.Choice(self.dialog, -1, (-1, -1), choices = colony_choices)
-        self.load_btn_choice = wx.Button( self.dialog, wx.ID_ANY, u"Load !", (100,0), wx.DefaultSize, 0 )
-        self.load_btn_choice.Bind( wx.EVT_LEFT_DOWN, self.btn_load_dialog )
-        self.dialog.ShowModal()
-        #wait until colony chosen
-        while self.colony_chosen is False:
-            wx.MilliSleep(100)
-            wx.GetApp().Yield()
-        #update hidden values
-        colony = self.chosen_colony
-        i = 0
-        j = 0
-        for x in self.main_upgrades:
-            c.execute("SELECT * FROM main_upgrades WHERE colony=? AND infrastructure=?", (colony,x[0]))
-            main_upgrades = c.fetchall()
-            self.main_upgrades[i] = main_upgrades
-            i=i+1
+        if self.contentNotSaved:
+            if wx.MessageBox("Current content has not been saved! Proceed?", "Please confirm",
+                            wx.ICON_QUESTION | wx.YES_NO, self) == wx.NO:
+                return
 
-        for x in self.supp_upgrades:
-            c.execute("SELECT * FROM supp_upgrades WHERE colony=? AND upgrade=?", (colony,x[0]))
-            supp_upgrades = c.fetchall()
-            self.supp_upgrades[j] = supp_upgrades
-            j=j+1
+        # otherwise ask the user what new file to open
+        with wx.FileDialog(self, "Open ColonyConfig file", wildcard="XYZ files (*.xyz)|*.xyz",
+                        style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
 
-        #fill in other values
-        # c.execute("SELECT * FROM colonies WHERE name=?",(colony,))
-        c_name = rows[colony][0]
-        self.v_name.SetValue(c_name)
-        c_type = rows[colony][1]
-        c_type_id = self.ch_types.FindString(c_type)
-        self.ch_types.SetSelection(c_type_id)
-        c_contracted = str(rows[colony][2])
-        self.m_funded.SetValue(int(c_contracted))
-        c_profit = str(rows[colony][3])
-        self.v_profit.SetValue(c_profit)
-        c_size = str(rows[colony][4])
-        self.v_size.SetValue(c_size)
-        c_comp = str(rows[colony][5])
-        self.v_comp.SetValue(c_comp)
-        c_order = str(rows[colony][6])
-        self.v_order.SetValue(c_order)
-        c_prod = str(rows[colony][7])
-        self.v_prod.SetValue(c_prod)
-        c_piety = str(rows[colony][8])
-        self.v_piety.SetValue(c_piety)
-        c_fraction = str(rows[colony][9])
-        self.v_frac.SetValue(c_fraction)
-        c_year = str(rows[colony][10])
-        self.v_year.SetValue(c_year)
-        c_millenium = str(rows[colony][11])
-        self.v_mill.SetValue(c_millenium)
-        c_governour = rows[colony][12]
-        self.m_gov.SetValue(c_governour)
-        c_personality = rows[colony][13]
-        c_personality_id = self.ch_personality.FindString(c_personality)
-        self.ch_personality.SetSelection(c_personality_id)
-        c_minerals = rows[colony][14]
-        c_minerals_id = self.ch_resource1.FindString(c_minerals)
-        self.ch_resource1.SetSelection(c_minerals_id)
-        c_addresource = rows[colony][15]
-        c_addresource_id = self.ch_resource2.FindString(c_addresource)
-        self.ch_resource2.SetSelection(c_addresource_id)
-        c_organics = rows[colony][16]
-        c_organics_id = self.ch_resource3.FindString(c_organics)
-        self.ch_resource3.SetSelection(c_organics_id)
-        c_special = rows[colony][17]
-        c_special_id = self.ch_resource4.FindString(c_special)
-        self.ch_resource4.SetSelection(c_special_id)
-        c_mvalue = str(rows[colony][18])
-        self.v_resource1.SetValue(c_mvalue)
-        c_avalue = str(rows[colony][19])
-        self.v_resource2.SetValue(c_avalue)
-        c_ovalue = str(rows[colony][20])
-        self.v_resource3.SetValue(c_ovalue)
-        c_svalue = str(rows[colony][21])
-        self.v_resource4.SetValue(c_svalue)
-        c_history = rows[colony][22]
-        self.m_output.SetValue(c_history)
-        c_representative = rows[colony][23]
-        c_representative_id = self.ch_representative.FindString(c_representative)
-        self.ch_representative.SetSelection(c_representative_id)
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return     # the user changed their mind
 
-
-    def btn_load_dialog(self, event):
-        self.chosen_colony = self.colonies.GetCurrentSelection()
-        self.dialog.EndModal(1)
-        self.colony_chosen = True
+            # Proceed loading the file chosen by the user
+            pathname = fileDialog.GetPath()
+            # instructions on what to do with chosen file
+            pass
 
     def create_colony( self, event ):
-        c_name = self.v_name.GetValue()
-        c_type = self.ch_types.GetString(self.ch_types.GetCurrentSelection())
-        if c_type == "":
-            c_type = random.choices(
-                population=["Agricultural", "Industrial", "Research", "Ecclesiarchal"],
-                weights=[0.25,0.25,0.25,0.25],
-                k=1,
-            )
-            c_type = str(c_type[0])
-        c_contracted = self.m_funded.IsChecked()
-        try:
-            c_profit = int((self.v_profit.GetValue()))
-        except ValueError:
-            c_profit = 1
-        try:
-            c_size = int(self.v_profit.GetValue())
-        except ValueError:
-            c_size = 1
-        try:
-            c_comp = int (self.v_comp.GetValue())
-        except ValueError:
-            c_comp = 1
-        try:
-            c_order = int (self.v_comp.GetValue())
-        except ValueError:
-            c_order = 1
-        try:
-            c_prod = int (self.v_comp.GetValue())
-        except ValueError:
-            c_prod = 1
-        try:
-            c_piety = int (self.v_comp.GetValue())
-        except ValueError:
-            c_piety = 1
-        c_fraction = int (self.v_frac.GetValue())
-        c_year = int (self.v_year.GetValue())
-        c_millenium = int (self.v_mill.GetValue())
-        c_governour = self.m_gov.GetValue()
-        if c_governour == "Governour":
-            c_governour = random.choices(
-                population=["Theon", "Calgan","Pyotr","Arthur","Jed", "Katharina", "Aphesius", "Zhara", "Violet", "Antaria"],
-                weights=[0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1],
-                k=1,
-            )
-            c_governour = str(c_governour[0])
-        c_personality = self.ch_personality.GetString(self.ch_personality.GetCurrentSelection())
-        if c_personality == "":
-            c_personality = random.choice(["Beloved", "Militarist", "Corrupt", "Idle", "Ambitious", "Zealous", "Patron", "Unlucky", "Administrator", "Cruel", "Spymaster", "Generalissimo", "Paranoid", "Mad", "Charitable", "Vainglorious", "Scholarly", "Avaricious"])
-        c_representative = self.ch_representative.GetString(self.ch_representative.GetCurrentSelection())
-        if c_representative == "Representative":
-            c_representative = random.choice(["Satrap", "Judge", "Cardinal", "Colonist", "General", "Dynasty Member"])
-        c_minerals = self.ch_resource1.GetString(self.ch_resource1.GetCurrentSelection())
-        if c_minerals == "Minerals":
-            c_minerals = random.choices(
-                population=["Industrial","Ornamental","Radioactive","Exotic Material"],
-                weights=[0.4,0.3,0.2,0.1],
-                k=1,
-            )
-            c_minerals = str(c_minerals[0])
-        c_addresource = self.ch_resource2.GetString(self.ch_resource2.GetCurrentSelection())
-        if c_addresource == "Add.Resource":
-            c_addresource = random.choices(
-                population=["Archeotech Cache", "Minerals", "Organic Compound", "Xenos Ruins"],
-                weights=[0.1,0.4,0.4,0.1],
-                k=1,
-            )
-            c_addresource = str(c_addresource[0])
-        if c_addresource == "Xenos Ruins":
-            c_addresource = random.choices(
-                population=["Unknown Species","Eldar","Egarian","Yu'Vath","Ork","Kroot"],
-                weights=[0.4,0.2,0.1,0.1,0.1,0.1],
-                k=1,
-            )
-            c_addresource = str(c_addresource[0])
-        c_organics = self.ch_resource3.GetString(self.ch_resource3.GetCurrentSelection())
-        if c_organics == "Organics":
-            c_organics = random.choices(
-                population=["Curative", "Juvenat Compound", "Toxin", "Vivid Accessory", "Exotic Compound"],
-                weights=[0.2,0.2,0.2,0.3,0.1],
-                k=1,
-            )
-            c_organics = str(c_organics[0])
-        c_special = self.ch_resource4.GetString(self.ch_resource4.GetCurrentSelection())
-        if c_special == "Landmark":
-            c_special = random.choices(
-                population=["Canyon","Cave Network","Crater","Mountain","Volcano","Exceptional"],
-                weights=[0.20,0.15,0.10,0.20,0.10,0.25],
-                k=1,
-            )
-            c_special = str(c_special[0])
-        if c_special == "Exceptional":
-            c_special = random.choice(["Glacier(ex)","Inland Sea(ex)","Perpetual Storm(ex)","Reef(ex)","Whirlpool(ex)"])
-        try:
-            c_mvalue = int (self.v_comp.GetValue())
-        except ValueError:
-            c_mvalue = random.randint(1,100)
-        try:
-            c_avalue = int (self.v_comp.GetValue())
-        except ValueError:
-            c_avalue = random.randint(1,100)
-        try:
-            c_ovalue = int (self.v_comp.GetValue())
-        except ValueError:
-            c_ovalue = random.randint(1,100)
-        try:
-            c_svalue = int (self.v_comp.GetValue())
-        except ValueError:
-            c_svalue = random.randint(1,100)
-        c_history = self.m_output.GetValue()
-        params = (c_name, c_type, c_contracted, c_profit, c_size, c_comp, c_order, c_prod, c_piety, c_fraction, c_year, c_millenium, c_governour, c_personality, c_minerals, c_addresource, c_organics, c_special, c_mvalue, c_avalue, c_ovalue, c_svalue, c_history, c_representative)
-        c.execute("INSERT OR REPLACE INTO colonies VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", params)
-        conn.commit()
+        pass
 
     def calculate( self, event ):
         pass
@@ -1125,6 +900,6 @@ class Navigation(wx.Panel):
 
 if __name__ == "__main__":
     app = wx.App(False)
-    frame = RT_Tools(parent=None)
+    frame = MyFrame1(parent=None)
     frame.Show()
     app.MainLoop()
